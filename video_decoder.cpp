@@ -93,32 +93,34 @@ int64_t VideoDecoder::_stream_seek_callback(void *p_opaque, int64_t p_offset, in
 		} break;
 		case AVSEEK_SIZE: {
 			int64_t len = decoder->video_file->get_length();
-			// Fallback: If Godot returns 0 length for a stream/file, return AVERROR unknown size (-1)
+			// Fallback: If Godot returns 0 length for a stream/file, return -1 (unknown size)
 			// instead of letting FFmpeg misinterpret 0 as invalid data bounds.
 			if (len <= 0) {
-				return -1; 
+				return -1;
 			}
 			return len;
-		} break;
-		default: {
-			return -1;
 		} break;
 	}
 	return decoder->video_file->get_position();
 }
 
 void VideoDecoder::prepare_decoding() {
-	avio_seek(io_context, 0, SEEK_SET);
 	if (!io_context) {
-		const int context_buffer_size = 4096;
+		const int context_buffer_size = 65536; // Increased to 64KB for legacy headers
 		unsigned char *context_buffer = (unsigned char *)av_malloc(context_buffer_size);
 		io_context = avio_alloc_context(context_buffer, context_buffer_size, 0, this, &VideoDecoder::_read_packet_callback, nullptr, &VideoDecoder::_stream_seek_callback);
+	} else {
+		avio_seek(io_context, 0, SEEK_SET);
 	}
 
 	format_context = avformat_alloc_context();
 	format_context->pb = io_context;
 	format_context->flags |= AVFMT_FLAG_GENPTS;
 	format_context->video_codec = forced_video_codec;
+
+	// Expand probe limits so FFmpeg can dig deeper past legacy MPEG padding
+	format_context->probesize = 32 * 1024 * 1024; // 32 MB
+	format_context->max_analyze_duration = 5 * AV_TIME_BASE;
 
 	int open_input_res = avformat_open_input(&format_context, "dummy", nullptr, nullptr);
 	input_opened = open_input_res >= 0;
