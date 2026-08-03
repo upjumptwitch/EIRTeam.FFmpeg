@@ -92,7 +92,13 @@ int64_t VideoDecoder::_stream_seek_callback(void *p_opaque, int64_t p_offset, in
 			decoder->video_file->seek_end(p_offset);
 		} break;
 		case AVSEEK_SIZE: {
-			return decoder->video_file->get_length();
+			int64_t len = decoder->video_file->get_length();
+			// Fallback: If Godot returns 0 length for a stream/file, return AVERROR unknown size (-1)
+			// instead of letting FFmpeg misinterpret 0 as invalid data bounds.
+			if (len <= 0) {
+				return -1; 
+			}
+			return len;
 		} break;
 		default: {
 			return -1;
