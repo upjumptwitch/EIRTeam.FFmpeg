@@ -10,9 +10,7 @@ on:
         type: string
 
 # Global Settings
-# SCONS_CACHE for windows must be set in the build environment
 env:
-  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONS_CACHE_MSVC_CONFIG: true
 
@@ -22,7 +20,6 @@ concurrency:
 
 jobs:
   build-windows:
-    # Windows 10 with latest image
     runs-on: "windows-latest"
     name: ${{ matrix.name }}
     strategy:
@@ -33,7 +30,6 @@ jobs:
             cache-name: windows
             target: ${{ inputs.target }}
             artifact-name: ${{ inputs.artifact-name }}
-            # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no
     steps:
       - uses: actions/checkout@v3
@@ -50,13 +46,13 @@ jobs:
         id: downloadfile
         name: Download the file
         with:
-          url: "https://github.com/EIRTeam/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-godot.tar.xz"
+          url: "https://github.com/EIRTeam/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl-godot.tar.xz"
           target: .
 
       - name: Extract tgz
         uses: ihiroky/extract-action@v1
         with:
-          file_path: ffmpeg-master-latest-win64-gpl-godot.tar.xz
+          file_path: ffmpeg-master-latest-win64-lgpl-godot.tar.xz
           extract_dir: .
 
       - name: Find Extracted FFmpeg Folder
