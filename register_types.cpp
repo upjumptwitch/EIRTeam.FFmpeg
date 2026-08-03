@@ -74,7 +74,7 @@ void initialize_ffmpeg_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	print_codecs();
+	//print_codecs();
 
 #if defined(ENABLE_STREAM_INFO) && !defined(GDEXTENSION)
 	GDREGISTER_CLASS(FFmpegStreamInfo);
