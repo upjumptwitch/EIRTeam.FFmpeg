@@ -74,6 +74,7 @@ void initialize_ffmpeg_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	av_log_set_level(AV_LOG_QUIET);
 	//print_codecs();
 
 #if defined(ENABLE_STREAM_INFO) && !defined(GDEXTENSION)
