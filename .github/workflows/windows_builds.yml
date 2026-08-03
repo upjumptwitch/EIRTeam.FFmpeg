@@ -9,7 +9,10 @@ on:
         required: true
         type: string
 
+# Global Settings
+# SCONS_CACHE for windows must be set in the build environment
 env:
+  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONS_CACHE_MSVC_CONFIG: true
 
@@ -19,6 +22,7 @@ concurrency:
 
 jobs:
   build-windows:
+    # Windows 10 with latest image
     runs-on: "windows-latest"
     name: ${{ matrix.name }}
     strategy:
@@ -29,6 +33,7 @@ jobs:
             cache-name: windows
             target: ${{ inputs.target }}
             artifact-name: ${{ inputs.artifact-name }}
+            # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no
     steps:
       - uses: actions/checkout@v3
@@ -54,11 +59,19 @@ jobs:
           file_path: ffmpeg-master-latest-win64-gpl-godot.tar.xz
           extract_dir: .
 
+      - name: Find Extracted FFmpeg Folder
+        id: ffmpeg_dir
+        shell: powershell
+        run: |
+          $dir = Get-ChildItem -Directory -Filter "ffmpeg-master*" | Select-Object -First 1
+          Write-Output "Found FFmpeg directory: $($dir.Name)"
+          echo "FFMPEG_FOLDER=../$($dir.Name)/" >> $env:GITHUB_ENV
+
       - name: Compilation
         uses: ./.github/actions/build
         with:
           sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
-          ffmpeg-path: "../ffmpeg-master-latest-win64-gpl-godot/"
+          ffmpeg-path: ${{ env.FFMPEG_FOLDER }}
           platform: windows
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
