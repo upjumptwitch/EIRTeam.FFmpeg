@@ -15,36 +15,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  windows-build-debug:
-    name: 🏁 Windows Debug
-    uses: ./.github/workflows/windows_builds.yml
-    with:
-      artifact-name: windows_template_debug
-      target: template_debug
   windows-build-release:
     name: 🏁 Windows Release
     uses: ./.github/workflows/windows_builds.yml
     with:
       artifact-name: windows_template_release
       target: template_release
-  linux-build-debug:
-    name: 🐧 Linux Debug
-    uses: ./.github/workflows/linux_builds.yml
-    with:
-      artifact-name: linux_template_debug
-      target: template_debug
-  linux-build-release:
-    name: 🐧 Linux Release
-    uses: ./.github/workflows/linux_builds.yml
-    with:
-      artifact-name: linux_template_release
-      target: template_release
-  static-checks:
-    name: 📊 Static checks
-    uses: ./.github/workflows/static_checks.yml
+
   publish_release:
     name: Publish release
-    needs: [windows-build-debug, windows-build-release, linux-build-release, linux-build-debug]
+    needs: [windows-build-release]
     runs-on: ubuntu-latest
     if: github.event.inputs.doRelease
     steps:
@@ -53,22 +33,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: windows_template_debug
-          path: artifacts_windows
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
           name: windows_template_release
-          path: artifacts_windows
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux_template_release
-          path: artifacts_windows
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux_template_debug
           path: artifacts_windows
       - name: Calculate short sha
         id: vars
@@ -86,7 +51,7 @@ jobs:
           RELDATE="$(date +'%Y-%m-%d %H:%M')"
           NAME="Auto-Build $RELDATE"
           TAGNAME="autobuild-$(date +'%Y-%m-%d-%H-%M')"
-          gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.{zip,tar.xz}
+          gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.zip
           echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
           echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
         env:
