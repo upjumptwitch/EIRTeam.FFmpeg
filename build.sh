@@ -5,11 +5,10 @@ set -e
 
 # User defined variables
 TARGET=${1:-"all"}
-PLATFORM=${2:-"linux"}
+PLATFORM=${2:-"windows"}
 SCONS_VERSION=${3:-"4.4.0"}
-FFMPEG_RELATIVE_PATH=${4:-"ffmpeg-master-latest-linux64-lgpl-godot"}
-FFMPEG_URL_OR_PATH=${5:-"https://github.com/EIRTeam/FFmpeg-Builds/releases/\
-download/latest/${FFMPEG_RELATIVE_PATH}.tar.xz"}
+FFMPEG_RELATIVE_PATH=${4:-"ffmpeg-master-latest-win64-gpl-godot"}
+FFMPEG_URL_OR_PATH=${5:-"https://github.com/EIRTeam/FFmpeg-Builds/releases/download/latest/${FFMPEG_RELATIVE_PATH}.tar.xz"}
 FFMPEG_TARBALL_PATH=${6:-"ffmpeg.tar.xz"}
 SKIP_FFMPEG_IMPORT=${7:-"false"}
 SCONS_FLAGS=${8:-"debug_symbols=no"}
@@ -72,8 +71,7 @@ setup() {
     pip install --upgrade pip
     # Install SCons
     pip install scons==${SCONS_VERSION}
-    # Exit virtual environment, as it will be re-entered later,
-    # potentially from a different instance of the script (if TARGET is "all")
+    # Exit virtual environment
     deactivate
     echo "SCons $(scons --version) installed."
 
@@ -95,7 +93,7 @@ build() {
     pushd ${BUILD_DIR}
     # Build
     scons \
-        platform=linux target=${TARGET} \
+        platform=${PLATFORM} target=${TARGET} \
         ffmpeg_path=${FFMPEG_PATH} \
         ${SCONS_FLAGS}
     # Show build results
@@ -129,4 +127,3 @@ else
     echo "${TARGET} build completed."
     cleanup
 fi
-
