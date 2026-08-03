@@ -43,6 +43,18 @@
 
 Ref<VideoStreamFFMpegLoader> ffmpeg_loader;
 
+// Custom callback to catch FFmpeg's internal messages
+static void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vl) {
+	if (level > av_log_get_level()) {
+		return;
+	}
+	char message[2048];
+	vsnprintf(message, sizeof(message), fmt, vl);
+	
+	// Send straight to Godot's output panel
+	godot::UtilityFunctions::print("[FFmpeg Log]: ", String(message).strip_edges());
+}
+
 static void print_codecs() {
 	const AVCodecDescriptor *desc = NULL;
 	char msg[512] = { 0 };
