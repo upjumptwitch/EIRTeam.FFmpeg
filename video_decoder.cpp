@@ -106,7 +106,7 @@ int64_t VideoDecoder::_stream_seek_callback(void *p_opaque, int64_t p_offset, in
 
 void VideoDecoder::prepare_decoding() {
 	if (!io_context) {
-		const int context_buffer_size = 65536; // Increased to 64KB for legacy headers
+		const int context_buffer_size = 65536; // 64KB for legacy headers
 		unsigned char *context_buffer = (unsigned char *)av_malloc(context_buffer_size);
 		io_context = avio_alloc_context(context_buffer, context_buffer_size, 0, this, &VideoDecoder::_read_packet_callback, nullptr, &VideoDecoder::_stream_seek_callback);
 	} else {
@@ -118,11 +118,15 @@ void VideoDecoder::prepare_decoding() {
 	format_context->flags |= AVFMT_FLAG_GENPTS;
 	format_context->video_codec = forced_video_codec;
 
-	// Expand probe limits so FFmpeg can dig deeper past legacy MPEG padding
+	// Expand probe limits for deep header analysis
 	format_context->probesize = 32 * 1024 * 1024; // 32 MB
 	format_context->max_analyze_duration = 5 * AV_TIME_BASE;
 
-	int open_input_res = avformat_open_input(&format_context, "dummy", nullptr, nullptr);
+	// Use the real file path so FFmpeg sees the .mpg extension hint
+	CharString path_str = video_file->get_path().utf8();
+	const char *filename_hint = path_str.length() > 0 ? path_str.get_data() : "input.mpg";
+
+	int open_input_res = avformat_open_input(&format_context, filename_hint, nullptr, nullptr);
 	input_opened = open_input_res >= 0;
 	ERR_FAIL_COND_MSG(!input_opened, vformat("Error opening file or stream: %s", ffmpeg_get_error_message(open_input_res)));
 
