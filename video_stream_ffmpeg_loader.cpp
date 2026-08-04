@@ -48,6 +48,13 @@ void VideoStreamFFMpegLoader::_update_recognized_extension_cache() const {
 		PackedStringArray demuxer_exts = String(current_fmt->extensions).split(",", false);
 		const_cast<VideoStreamFFMpegLoader *>(this)->recognized_extension_cache.append_array(demuxer_exts);
 	}
+	// FORCE-ADD MPEG EXTENSIONS TO SATISFY GODOT'S GATEKEEPER
+	if (!recognized_extension_cache.has("mpeg")) {
+		const_cast<VideoStreamFfmpegLoader *>(this)->recognized_extension_cache.push_back("mpeg");
+	}
+	if (!recognized_extension_cache.has("mpg")) {
+		const_cast<VideoStreamFfmpegLoader *>(this)->recognized_extension_cache.push_back("mpg");
+	}
 }
 
 String VideoStreamFFMpegLoader::get_resource_type_internal(const String &p_path) const {
