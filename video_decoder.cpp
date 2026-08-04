@@ -126,7 +126,14 @@ void VideoDecoder::prepare_decoding() {
 	CharString path_str = video_file->get_path().utf8();
 	const char *filename_hint = path_str.length() > 0 ? path_str.get_data() : "input.mpg";
 
-	int open_input_res = avformat_open_input(&format_context, filename_hint, nullptr, nullptr);
+	AVDictionary *options = nullptr;
+	av_dict_set(&options, "probesize", "5000000", 0);
+	av_dict_set(&options, "analyzeduration", "5000000", 0);
+	av_dict_set(&options, "fflags", "ignidx", 0);
+
+	int open_input_res = avformat_open_input(&format_context, filename_hint, nullptr, &options);
+	av_dict_free(&options);
+
 	input_opened = open_input_res >= 0;
 	ERR_FAIL_COND_MSG(!input_opened, vformat("Error opening file or stream: %s", ffmpeg_get_error_message(open_input_res)));
 
