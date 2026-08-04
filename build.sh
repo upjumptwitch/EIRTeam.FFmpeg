@@ -91,11 +91,23 @@ build() {
     source venv/bin/activate
     # Enter build directory
     pushd ${BUILD_DIR}
+    
+    # BUST THE CACHE: Force SCons to recompile instead of using the old DLL
+    echo "Clearing SCons cache to force a fresh build..."
+    rm -rf ${SCONS_CACHE_DIR}
+
     # Build
     scons \
         platform=${PLATFORM} target=${TARGET} \
         ffmpeg_path=${FFMPEG_PATH} \
         ${SCONS_FLAGS}
+        
+    # Package the BtbN supporting DLLs into the artifact
+    if [ -d "${FFMPEG_PATH}/bin" ]; then
+        echo "Packaging BtbN shared DLLs..."
+        cp ${FFMPEG_PATH}/bin/*.dll build/addons/ffmpeg/
+    fi
+
     # Show build results
     ls -R build/addons/ffmpeg
 
