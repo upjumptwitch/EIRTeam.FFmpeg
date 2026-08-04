@@ -131,7 +131,14 @@ void VideoDecoder::prepare_decoding() {
 	av_dict_set(&options, "analyzeduration", "5000000", 0);
 	av_dict_set(&options, "fflags", "ignidx", 0);
 
-	int open_input_res = avformat_open_input(&format_context, filename_hint, nullptr, &options);
+	// Force the MPEG demuxer if it's an mpg/mpeg file to bypass strict auto-probing
+	AVInputFormat *forced_iformat = nullptr;
+	String ext = video_file->get_path().get_extension().to_lower();
+	if (ext == "mpg" || ext == "mpeg") {
+		forced_iformat = (AVInputFormat *)av_find_input_format("mpeg");
+	}
+
+	int open_input_res = avformat_open_input(&format_context, filename_hint, forced_iformat, &options);
 	av_dict_free(&options);
 
 	input_opened = open_input_res >= 0;
