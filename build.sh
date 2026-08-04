@@ -7,7 +7,7 @@ set -e
 TARGET=${1:-"all"}
 PLATFORM=${2:-"windows"}
 SCONS_VERSION=${3:-"4.4.0"}
-FFMPEG_RELATIVE_PATH=${4:-"ffmpeg-master-latest-win64-gpl"}
+FFMPEG_RELATIVE_PATH=${4:-"ffmpeg-master-latest-win64-gpl-shared"}
 FFMPEG_URL_OR_PATH=${5:-"https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_RELATIVE_PATH}.zip"}
 FFMPEG_TARBALL_PATH=${6:-"ffmpeg.zip"}
 SKIP_FFMPEG_IMPORT=${7:-"false"}
